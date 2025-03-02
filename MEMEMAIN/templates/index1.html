@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemeInsight</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <style>
+        /* Стили для навигационной панели */
+        .navigation {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navigation a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            transition: all 0.3s;
+        }
+
+        .navigation a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+
+        /* Стили для кнопок навигации в секции с функциями */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .nav-button {
+            background-color: #6200ee;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(98, 0, 238, 0.3);
+            background-color: #5000d6;
+        }
+
+        /* Стиль для контейнера с функциями */
+        .features-container {
+            background-color: white;
+            padding: 50px 20px;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .features-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="project-name">MemeInsight</div>
+        <!-- Добавляем навигационное меню -->
+        <nav class="navigation">
+            <a href="/" class="active">Главная</a>
+            <a href="/top-memes">Топ мемов</a>
+            <a href="/filter-memes">Фильтрация</a>
+        </nav>
+    </header>
+
+    <section class="welcome-section">
+        <div class="welcome-title">Добро пожаловать в MemeInsight — ваш проводник в мир мемов!</div>
+        <div class="welcome-subtitle">Исследуйте мемы с нами 🚀</div>
+        <button class="start-button">Начать</button>
+
+        <!-- Добавляем кнопки навигации в приветственную секцию -->
+        <div class="nav-buttons" style="margin-top: 30px;">
+            <a href="/top-memes" class="nav-button">Топ мемов</a>
+            <a href="/filter-memes" class="nav-button">Фильтр мемов</a>
+        </div>
+    </section>
+
+    <div id="3d-container" class="model-container"></div>
+
+    <!-- Добавляем секцию с функциями и кнопками навигации -->
+    <section class="features-container">
+        <h2 class="features-title">Топ мемы</h2>
+
+        <div class="content-sections-container">
+            <section class="content-section">
+                <h2 class="content-title">Тут</h2>
+                <div class="content-image">
+                    <img src="{{ url_for('static', filename='images/img.png') }}" alt="Трамп">
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2 class="content-title">Здесь</h2>
+                <div class="content-image">
+                    <img src="{{ url_for('static', filename='images/img_1.png') }}" alt="Трамп">
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2 class="content-title">Тут</h2>
+                <div class="content-image">
+                    <img src="{{ url_for('static', filename='images/img_2.png') }}" alt="Трамп">
+                </div>
+            </section>
+        </div>
+
+        <div class="nav-buttons" style="margin-top: 40px;">
+            <a href="/top-memes" class="nav-button">Перейти к топ мемам VK</a>
+            <a href="/filter-memes" class="nav-button">Перейти к фильтрации мемов</a>
+        </div>
+    </section>
+
+    <section class="upload-section">
+        <h2 class="upload-title">Проанализируй свой мем</h2>
+        <div class="upload-container">
+            <div class="upload-zone" id="dropZone">
+                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                <div class="upload-icon"></div>
+                <div class="upload-text">Загрузить мем</div>
+                <img id="imagePreview" src="#" alt="Предпросмотр мема" style="display: none;">
+            </div>
+            <textarea id="promptInput" rows="3" placeholder="Задайте вопрос о меме или оставьте пустым для общего анализа"></textarea>
+            <button id="uploadBtn" class="analyze-button">Анализировать</button>
+            <div class="loading" id="loading">Анализирую мем, пожалуйста подождите...</div>
+        </div>
+        <div class="analysis-output" id="analysisOutput">
+            <div class="analysis-message" id="response"></div>
+        </div>
+
+        <!-- Добавляем еще раз кнопки навигации под анализатором -->
+        <div class="nav-buttons" style="margin-top: 40px;">
+            <a href="/top-memes" class="nav-button">Посмотреть топ мемов</a>
+            <a href="/filter-memes" class="nav-button">Фильтровать мемы</a>
+        </div>
+    </section>
+
+    <!-- Добавляем фиксированную кнопку для навигации (всегда видна) -->
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="/top-memes" style="background-color: #6200ee; color: white; border-radius: 50%; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <span style="font-size: 12px; text-align: center;">Топ<br>мемов</span>
+            </a>
+            <a href="/filter-memes" style="background-color: #6200ee; color: white; border-radius: 50%; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <span style="font-size: 12px; text-align: center;">Фильтр<br>мемов</span>
+            </a>
+        </div>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='three-scene.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const loading = document.getElementById('loading');
+            const response = document.getElementById('response');
+            const analysisOutput = document.getElementById('analysisOutput');
+
+            // Открыть диалог выбора файла при клике на зону загрузки
+            dropZone.addEventListener('click', function() {
+                imageInput.click();
+            });
+
+            // Обработка выбора файла
+            imageInput.onchange = function(event) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    dropZone.classList.add('has-image');
+                };
+                if (event.target.files.length > 0) {
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            };
+
+            // Обработка перетаскивания файлов
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+
+                if (e.dataTransfer.files.length) {
+                    imageInput.files = e.dataTransfer.files;
+                    const changeEvent = new Event('change');
+                    imageInput.dispatchEvent(changeEvent);
+                }
+            });
+
+            // Обработка клика на кнопку "Анализировать"
+            uploadBtn.onclick = function() {
+                if (imageInput.files.length === 0) {
+                    alert('Пожалуйста, выберите изображение');
+                    return;
+                }
+
+                var promptText = document.getElementById('promptInput').value.trim() || "Опиши подробно, что ты видишь на этом изображении, объясни смысл мема и его происхождение.";
+
+                var formData = new FormData();
+                formData.append('file', imageInput.files[0]);
+                formData.append('message', promptText);
+
+                loading.style.display = 'block';
+                response.textContent = '';
+                analysisOutput.classList.remove('visible');
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    analysisOutput.classList.add('visible');
+
+                    if (data.error) {
+                        response.textContent = 'Ошибка: ' + data.error;
+                    } else {
+                        response.textContent = data.analysis;
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    analysisOutput.classList.add('visible');
+                    response.textContent = 'Произошла ошибка: ' + error;
+                });
+            };
+
+            // Начать анализ при нажатии кнопки "Начать"
+            document.querySelector('.start-button').addEventListener('click', function() {
+                document.querySelector('.upload-section').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
